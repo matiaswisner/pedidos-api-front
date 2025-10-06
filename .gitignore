@@ -1,0 +1,39 @@
+# Flutter/Dart/Pub related
+.dart_tool/
+.packages
+.pub/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+generated_plugin_registrant.dart
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VS Code related
+.vscode/
+.history/
+
+# Windows & macOS files
+Thumbs.db
+.DS_Store
+
+# Logs
+*.log
+
+# Environment / keys / tokens
+.env
+.env.*
+
+# Output / cache
+*.lock
+pubspec.lock
+
+# Coverage
+coverage/
+
+# Assets temp
+assets/.DS_Store
