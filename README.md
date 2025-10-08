@@ -80,7 +80,7 @@ Creación de pedidos y pagos
 
 Matías Wisner
 Profesor Técnico | Desarrollador Full Stack | Gestor de Proyectos
-📍 La Plata, Argentina
+📍 Hurlingham, BsAs, Argentina.
 📧 matiaswisner@gmail.com
 
 🌐 github.com/matiaswisner
