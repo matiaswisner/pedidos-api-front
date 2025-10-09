@@ -1,32 +1,55 @@
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
-import 'business_list_screen.dart'; // 🆕 reemplaza al import anterior de products_screen.dart
+import 'products_screen.dart';
+import '../services/api_service.dart'; // 🆕 Import del servicio HTTP
 
-class OrdersScreen extends StatelessWidget {
+class OrdersScreen extends StatefulWidget {
   const OrdersScreen({super.key});
 
   @override
+  State<OrdersScreen> createState() => _OrdersScreenState();
+}
+
+class _OrdersScreenState extends State<OrdersScreen> {
+  List<Map<String, dynamic>> businesses = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBusinesses();
+  }
+
+  Future<void> _loadBusinesses() async {
+    try {
+      final data = await ApiService.getBusinesses();
+      setState(() {
+        businesses = List<Map<String, dynamic>>.from(data);
+        isLoading = false;
+      });
+    } catch (e) {
+      print('Error al cargar negocios: $e');
+      setState(() => isLoading = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> categories = [
-      {'name': 'Almacén', 'icon': Icons.store, 'color': Colors.blueAccent},
-      {'name': 'Kiosco', 'icon': Icons.local_convenience_store, 'color': Colors.teal},
-      {'name': 'Ropa', 'icon': Icons.checkroom, 'color': Colors.purple},
-      {'name': 'Verdulería', 'icon': Icons.eco, 'color': Colors.green},
-      {'name': 'Panadería', 'icon': Icons.bakery_dining, 'color': Colors.amber},
-      {'name': 'Farmacia', 'icon': Icons.local_pharmacy, 'color': Colors.indigo}, // 🆕 ejemplo extra
-      {'name': 'Delivery', 'icon': Icons.delivery_dining, 'color': Colors.redAccent},
-    ];
+    final colors = {
+      'celeste': const Color(0xFF6EC1E4),
+      'blanco': Colors.white,
+      'rojoFederal': const Color(0xFFCC2222),
+    };
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Negocios'),
-        backgroundColor: const Color(0xFF6EC1E4),
+        backgroundColor: colors['celeste'],
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Cerrar sesión',
             onPressed: () {
-              // 🧩 Confirmación antes de salir
               showDialog(
                 context: context,
                 builder: (ctx) => AlertDialog(
@@ -42,10 +65,14 @@ class OrdersScreen extends StatelessWidget {
                         Navigator.pushReplacement(
                           context,
                           PageRouteBuilder(
-                            transitionDuration: const Duration(milliseconds: 600),
+                            transitionDuration:
+                            const Duration(milliseconds: 600),
                             pageBuilder: (_, __, ___) => const LoginScreen(),
-                            transitionsBuilder: (_, animation, __, child) =>
-                                FadeTransition(opacity: animation, child: child),
+                            transitionsBuilder:
+                                (_, animation, __, child) => FadeTransition(
+                              opacity: animation,
+                              child: child,
+                            ),
                           ),
                         );
                       },
@@ -58,7 +85,6 @@ class OrdersScreen extends StatelessWidget {
           ),
         ],
       ),
-
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -67,102 +93,75 @@ class OrdersScreen extends StatelessWidget {
             end: Alignment.bottomCenter,
           ),
         ),
-        child: Column(
-          children: [
-            // 🔍 Barra de búsqueda
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: TextField(
-                decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.search),
-                  hintText: '¿Qué estás buscando?',
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : businesses.isEmpty
+            ? const Center(child: Text('No hay negocios disponibles'))
+            : ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: businesses.length,
+          itemBuilder: (context, index) {
+            final business = businesses[index];
+            return Card(
+              elevation: 4,
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: colors['celeste'],
+                  child: const Icon(Icons.store, color: Colors.white),
+                ),
+                title: Text(
+                  business['name'] ?? 'Negocio sin nombre',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF003366),
                   ),
                 ),
-              ),
-            ),
-
-            // 📋 Lista de categorías
-            Expanded(
-              child: ListView.builder(
-                itemCount: categories.length,
-                itemBuilder: (context, index) {
-                  final category = categories[index];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Card(
-                      elevation: 4,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                subtitle: Text(
+                  business['category'] ?? 'Sin categoría',
+                  style: const TextStyle(color: Colors.black54),
+                ),
+                trailing:
+                const Icon(Icons.arrow_forward_ios, size: 18),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      transitionDuration:
+                      const Duration(milliseconds: 700),
+                      pageBuilder: (_, __, ___) => ProductsScreen(
+                        categoryName: business['name'],
                       ),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: category['color'],
-                          child: Icon(category['icon'], color: Colors.white),
-                        ),
-                        title: Text(
-                          category['name'],
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF003366),
+                      transitionsBuilder: (_, animation, __, child) {
+                        var fade = Tween<double>(
+                          begin: 0.0,
+                          end: 1.0,
+                        ).chain(CurveTween(curve: Curves.easeInOut));
+                        var slide = Tween<Offset>(
+                          begin: const Offset(0.1, 0),
+                          end: Offset.zero,
+                        ).chain(CurveTween(curve: Curves.easeInOut));
+                        return FadeTransition(
+                          opacity: animation.drive(fade),
+                          child: SlideTransition(
+                            position: animation.drive(slide),
+                            child: child,
                           ),
-                        ),
-                        trailing: const Icon(Icons.arrow_forward_ios, size: 18),
-                        onTap: () {
-                          // 🆕 Navegación animada hacia BusinessListScreen
-                          Navigator.push(
-                            context,
-                            PageRouteBuilder(
-                              transitionDuration: const Duration(milliseconds: 700),
-                              pageBuilder: (_, __, ___) => BusinessListScreen(
-                                categoryName: category['name'],
-                              ),
-                              transitionsBuilder: (_, animation, __, child) {
-                                var fade = Tween<double>(begin: 0.0, end: 1.0)
-                                    .chain(CurveTween(curve: Curves.easeInOut));
-                                var slide = Tween<Offset>(
-                                  begin: const Offset(0.1, 0),
-                                  end: Offset.zero,
-                                ).chain(CurveTween(curve: Curves.easeInOut));
-                                return FadeTransition(
-                                  opacity: animation.drive(fade),
-                                  child: SlideTransition(
-                                    position: animation.drive(slide),
-                                    child: child,
-                                  ),
-                                );
-                              },
-                            ),
-                          );
-
-                          // Muestra una notificación rápida
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Abriendo ${category['name']}...',
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                              backgroundColor: category['color'],
-                              duration: const Duration(milliseconds: 800),
-                            ),
-                          );
-                        },
-                      ),
+                        );
+                      },
                     ),
                   );
                 },
               ),
-            ),
-          ],
+            );
+          },
         ),
       ),
-
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFFCC2222), // Rojo Federal
+        backgroundColor: colors['rojoFederal'],
         child: const Icon(Icons.add, color: Colors.white),
         onPressed: () {
           ScaffoldMessenger.of(context).showSnackBar(
