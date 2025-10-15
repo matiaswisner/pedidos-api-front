@@ -1,3 +1,4 @@
+//.gitignore
 gradle-wrapper.jar
 /.gradle
 /captures/
