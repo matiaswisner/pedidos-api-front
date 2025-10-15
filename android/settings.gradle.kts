@@ -1,3 +1,4 @@
+//settings.gradle.kts
 pluginManagement {
     val flutterSdkPath =
         run {
