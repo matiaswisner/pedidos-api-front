@@ -1,3 +1,4 @@
+//generated_plugin_registrant.cc
 //
 //  Generated file. Do not edit.
 //
