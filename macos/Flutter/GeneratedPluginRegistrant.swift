@@ -1,3 +1,4 @@
+//GeneratedPluginRegistrant
 //
 //  Generated file. Do not edit.
 //
