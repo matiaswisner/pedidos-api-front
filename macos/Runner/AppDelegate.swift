@@ -1,3 +1,4 @@
+//AppDelegate.swift
 import Cocoa
 import FlutterMacOS
 
