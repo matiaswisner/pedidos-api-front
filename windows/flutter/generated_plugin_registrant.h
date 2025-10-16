@@ -1,3 +1,4 @@
+//generated_plugin_registrant.h
 //
 //  Generated file. Do not edit.
 //
