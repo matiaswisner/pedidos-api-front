@@ -1,3 +1,4 @@
+//generated_plugins.cmake
 #
 # Generated file, do not edit.
 #
