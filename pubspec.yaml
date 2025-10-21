@@ -1,3 +1,4 @@
+//pubspec.yaml
 name: pedidos_front
 description: "Frontend para Orders API"
 publish_to: 'none'
